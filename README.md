@@ -20,4 +20,4 @@ node index.js 开启后端
 文件layout 前端运行文件
 
 # 效果图
- <img src='./view.png' alt="效果聊天图" style="zoom:100%" >
+ <img src='./v.png' alt="效果聊天图" style="zoom:100%" >
