@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <!-- 设置主屏幕图标 -->
+  <!--ios和Android都支持-->
+  <link rel="apple-touch-icon-precomposed" href="./logo.png">
+  <!--仅Android支持-->
+  <link rel="icon" href="./logo.png">
+  <!-- WebApp模式 -->
+  <!--ios和Android都支持-->
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <!--仅Android支持-->
+  <meta name="mobile-web-app-capable" content="yes">
+
+  <!-- 系统顶栏的颜色(content = black、white 和 black-translucent)选其一就可以 -->
+  <meta name="apple-mobile-web-app-status-bar-style" content="white">
+
+  <link rel="icon" href="./logo.png" sizes="32x32">
+  <meta name="viewport"
+    content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+  <title>hm聊天</title>
+  <style>
+    * {
+      padding: 0;
+      margin: 0;
+    }
+
+    header {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 50px;
+      text-align: center;
+      line-height: 50px;
+      font-size: 20px;
+      background-color: #03a9f4;
+      color: #ffffff;
+      z-index: 100;
+
+    }
+
+    .content {
+      margin: 50px 0 121px;
+      padding: 10px;
+    }
+
+    .inpull {
+      width: 100%;
+      height: 60px;
+      position: fixed;
+      bottom: 50px;
+      box-shadow: 2px -7px 8px 0px #e6e6e6;
+      padding: 5px;
+      outline: none;
+      overflow: auto;
+      border-bottom: 1px solid #e4e4e4;
+      color: #333333;
+    }
+
+    .inpull input {
+      outline: none;
+      width: 100%;
+      height: 100%;
+      font-size: 15px;
+    }
+
+    footer {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      width: 100%;
+      height: 50px;
+      display: flex;
+      /* box-shadow: 1px 1px 9px 2px #888888 */
+    }
+
+    footer>div {
+      text-align: center;
+      line-height: 50px;
+      flex: 1;
+    }
+
+    footer>div:active {
+      background-color: #e6e6e6;
+    }
+
+    /* js */
+    .fullmain {
+      height: 100vh;
+      width: 100%;
+      line-height: 100vh;
+      text-align: center;
+    }
+
+    .itemwarp {
+      display: flex;
+      justify-content: flex-end;
+    }
+
+    .itemwarp .my {
+      width: 50px;
+      height: 50px;
+      font-size: 40px;
+      border: 2px solid #03a9f4;
+      border-radius: 50%;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      transform: translate(0, 15px);
+    }
+
+    .itemwarp .info {
+      flex: 1;
+      margin-left: 5px;
+      padding: 5px;
+      /* background-color: green; */
+    }
+
+    .itemwarp .info span {
+      color: black;
+      font-size: 10px;
+      transform: translate(0, -15px);
+    }
+
+    .itemwarp .info .main {
+      display: flex;
+      align-items: center;
+      display: flex;
+      align-items: center;
+      background-color: #8BC34A;
+      padding: 10px;
+      color: #fff;
+      text-align: justify;
+      word-break: break-all;
+    }
+
+    /* 个人 */
+    .itemwarp.my .info,
+    .itemwarp.my .info .main {
+      text-align: right;
+    }
+  </style>
+</head>
+
+<body>
+  <header onclick="clearip()">
+    HM 聊天室内～ 点我重置个人
+  </header>
+  <audio src="./mp3/iphone.mp3" id="mp3" style="display: none;">
+    <source src="./mp3/iphone.mp3">
+    </source>
+    你的浏览器不支持～
+  </audio>
+  <div class="content" id="content">
+    <span id="nei"></span>
+    <!-- 其他人 -->
+    <!-- <div class="itemwarp">
+      <div class="my"></div>
+      <div class="info">
+        <span>name:231 <time>2008-11-10</time></span>
+        <div class="main">
+          hhh
+        </div>
+      </div>
+    </div> -->
+    <!-- 个人 -->
+    <!-- <div class="itemwarp my">
+      <div class="info">
+        <span>name:231 <time>2008-11-10</time></span>
+        <div class="main">
+          hhh
+        </div>
+      </div>
+      <div class="my"></div>
+    </div> -->
+  </div>
+  <div class="inpull" contenteditable="true" id="inpull" style="background-color: #ffffff;">
+  </div>
+  <footer id="footer" style="background-color: #ffffff;">
+    <div id="pullinfo">发送消息</div>
+    <!-- <div id="clearinfo">清空信息</div> -->
+  </footer>
+  <script type="text/javascript">
+    let ws;
+    // dom 操作类
+    class Dom {
+      // 播放
+      PlayMp3() {
+        document.getElementById('mp3').play();
+      };
+      // 全屏幕高度
+      fullScreen(word) {
+        let main = this.getId('content');
+        main.innerHTML = `
+          <div class="fullmain">
+            ${word}
+          </div>
+        `
+        main.style.margin = 0;
+        main.style.padding = 0;
+      };
+      // 让久信息往上滚动
+      setHeight() {
+        let domheigth = document.body.scrollHeight;
+        let fooderheight = 121;
+        window.scrollBy(0, domheigth + fooderheight);
+      };
+      // 获取id
+      getId(value) {
+        return document.getElementById(value)
+      };
+    }
+    const GetDom = new Dom();
+    // 清除
+    function clearip() {
+      localStorage.removeItem('ip');
+      alert('清空ip')
+    }
+    // 加载
+    if (window.WebSocket) {
+      webinfo();// 链接websocket
+      let footer = GetDom.getId('footer')
+      footer.addEventListener('click', () => {
+        footinfo(event);
+      })
+    } else {
+      GetDom.fullScreen('你的浏览器不支持websocket');
+    }
+
+    // 写法1、footer事件触发 (运用事件委托)
+    class Footeven {
+      // 发送事件
+      pullinfo() {
+        if (ws.readyState == WebSocket.OPEN) {
+          ws.send(GetDom.getId('inpull').innerText);
+          GetDom.getId('inpull').innerHTML = ''
+        }
+      };
+      // 清空信息事件
+      clearinfo() {
+        console.log('清空信息');
+      };
+    }
+    // 回车发送
+    GetDom.getId('inpull').onkeydown = function (e) {
+      // 兼容FF和IE和Opera
+      let theEvent = window.event || e;
+      let code = theEvent.keyCode || theEvent.which || theEvent.charCode;
+      if (code == 13) {
+        let _fn_ = new Footeven();
+        _fn_['pullinfo']();
+        // this.moveEnd('character',-1);
+        // console.log
+      }
+      // console.log(document.selection)
+    }
+    // function downpull(event) {
+    //   event.preventDefault();
+    //   let _fn_ = new Footeven();
+    //   _fn_['pullinfo'];
+    // }
+    // 发送信息
+    function footinfo(event) {
+      let ev = event || window.event;// 写兼容
+      let target = ev.target || target.srcElement;// 写兼容
+      if (target.id) {
+        let _fn_ = new Footeven();
+        const domeven = {
+          'pullinfo': () => { _fn_.pullinfo() },
+          'clearinfo': () => { _fn_.clearinfo() },
+          'default': () => { throw new Error('没有这个方法啊') }
+        }
+        domeven[target.id || 'default']();// 调用方法
+      } else {
+        throw new Error('写绑定事件id哇')
+      }
+    }
+
+    // 建立websocket
+    function webinfo() {
+      // 如果开启本地就把101.37.39.177:8080 替换为localhost:8080
+      // ws = new WebSocket("ws://101.37.39.177:8080//ws");
+      ws = new WebSocket("ws://192.168.1.7:8081")
+      let N = GetDom.getId('nei');
+      // 连接建立时触发
+      ws.onopen = function (e) {
+        // Web Socket 已连接上，使用 send() 方法发送数据
+        // ws.send("发送数据");
+        N.innerHTML = "连接开启"
+      };
+      // 客户端接收服务端数据时触发
+      ws.onmessage = function (e) {
+        let _box = GetDom.getId('content');
+        let getdata = e.data.split('ip,');
+        let getip = getdata[0];// ip
+        let main = getdata[1] || '';// 内容
+        // let _who = 'my';
+        console.log(getip + ' ' + main);
+        if (!localStorage.getItem('ip')) {
+          // 初始化;
+          localStorage.setItem('ip', getip)
+        }
+        if (main == "") return;// 如果内容为空下面停止即行
+        if (localStorage.getItem('ip') === getip) {
+          // 自己
+          let dom = document.createElement('div');
+          dom.setAttribute('class', 'itemwarp my');
+          dom.innerHTML = `
+              <div class="info">
+                <span>name:${getip} <time></time></span>
+                <div class="main">
+                  ${main}
+                </div>
+              </div>
+              <div class="my">😯</div>
+           `
+          _box.appendChild(dom);
+          GetDom.setHeight();
+        } else {
+          GetDom.PlayMp3();
+          // 他人
+          let dom = document.createElement('div');
+          dom.setAttribute('class', 'itemwarp');
+          dom.innerHTML = `
+            <div class="my">🐰</div>
+            <div class="info">
+              <span>name:${getip} <time></time></span>
+              <div class="main">
+                ${main}
+              </div>
+            </div>
+          `
+          _box.appendChild(dom);
+          GetDom.setHeight();
+        }
+      }
+      // 连接关闭时触发
+      ws.onclose = function (e) {
+        console.log(e)
+        N.innerHTML = '连接被关闭' + 'websocket 断开: ' + e.code + ' ' + e.reason + ' ' + e.wasClean
+      };
+    }
+  </script>
+</body>
+
+</html>
